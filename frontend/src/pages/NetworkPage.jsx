@@ -4,16 +4,17 @@ import Sidebar from "../components/Sidebar";
 import { UserPlus } from "lucide-react";
 import FriendRequest from "../components/FriendRequest";
 import UserCard from "../components/UserCard";
+import { CardSkeleton } from "../components/Skeleton";
 
 const NetworkPage = () => {
 	const { data: user } = useQuery({ queryKey: ["authUser"] });
 
-	const { data: connectionRequests } = useQuery({
+	const { data: connectionRequests, isLoading: isRequestsLoading } = useQuery({
 		queryKey: ["connectionRequests"],
 		queryFn: () => axiosInstance.get("/connections/requests"),
 	});
 
-	const { data: connections } = useQuery({
+	const { data: connections, isLoading: isConnectionsLoading } = useQuery({
 		queryKey: ["connections"],
 		queryFn: () => axiosInstance.get("/connections"),
 	});
@@ -27,12 +28,20 @@ const NetworkPage = () => {
 				<div className='bg-secondary rounded-lg shadow p-6 mb-6'>
 					<h1 className='text-2xl font-bold mb-6'>My Network</h1>
 
-					{connectionRequests?.data?.length > 0 ? (
+					{isRequestsLoading ? (
+						<div className='space-y-4 mb-8'>
+							<CardSkeleton />
+							<CardSkeleton />
+						</div>
+					) : connectionRequests?.data?.length > 0 ? (
 						<div className='mb-8'>
-							<h2 className='text-xl font-semibold mb-2'>Connection Request</h2>
+							<h2 className='text-xl font-semibold mb-2'>
+								Connection Requests{" "}
+								<span className='text-primary'>({connectionRequests.data.length})</span>
+							</h2>
 							<div className='space-y-4'>
 								{connectionRequests.data.map((request) => (
-									<FriendRequest key={request.id} request={request} />
+									<FriendRequest key={request._id} request={request} />
 								))}
 							</div>
 						</div>
@@ -48,15 +57,26 @@ const NetworkPage = () => {
 							</p>
 						</div>
 					)}
-					{connections?.data?.length > 0 && (
-						<div className='mb-8'>
-							<h2 className='text-xl font-semibold mb-4'>My Connections</h2>
-							<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-								{connections.data.map((connection) => (
-									<UserCard key={connection._id} user={connection} isConnection={true} />
-								))}
-							</div>
+
+					{isConnectionsLoading ? (
+						<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+							<CardSkeleton />
+							<CardSkeleton />
+							<CardSkeleton />
 						</div>
+					) : (
+						connections?.data?.length > 0 && (
+							<div className='mb-8'>
+								<h2 className='text-xl font-semibold mb-4'>
+									My Connections <span className='text-primary'>({connections.data.length})</span>
+								</h2>
+								<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+									{connections.data.map((connection) => (
+										<UserCard key={connection._id} user={connection} isConnection={true} />
+									))}
+								</div>
+							</div>
+						)
 					)}
 				</div>
 			</div>

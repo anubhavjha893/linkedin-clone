@@ -10,7 +10,7 @@ const LoginPage = () => {
           Sign in to your account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Welcome back! Let's build your professional world.
+          Welcome back! Let&apos;s build your professional world.
         </p>
       </div>
 

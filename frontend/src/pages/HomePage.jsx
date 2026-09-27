@@ -5,6 +5,7 @@ import PostCreation from "../components/PostCreation";
 import Post from "../components/Post";
 import { Users } from "lucide-react";
 import RecommendedUser from "../components/RecommendedUser";
+import { PostSkeleton } from "../components/Skeleton";
 
 const HomePage = () => {
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
@@ -17,15 +18,13 @@ const HomePage = () => {
 		},
 	});
 
-	const { data: posts } = useQuery({
+	const { data: posts, isLoading: isPostsLoading } = useQuery({
 		queryKey: ["posts"],
 		queryFn: async () => {
 			const res = await axiosInstance.get("/posts");
 			return res.data;
 		},
 	});
-
-	console.log("posts", posts);
 
 	return (
 		<div className='grid grid-cols-1 lg:grid-cols-4 gap-6'>
@@ -36,11 +35,18 @@ const HomePage = () => {
 			<div className='col-span-1 lg:col-span-2 order-first lg:order-none'>
 				<PostCreation user={authUser} />
 
+				{isPostsLoading && (
+					<>
+						<PostSkeleton />
+						<PostSkeleton />
+					</>
+				)}
+
 				{posts?.map((post) => (
 					<Post key={post._id} post={post} />
 				))}
 
-				{posts?.length === 0 && (
+				{!isPostsLoading && posts?.length === 0 && (
 					<div className='bg-white rounded-lg shadow p-8 text-center'>
 						<div className='mb-6'>
 							<Users size={64} className='mx-auto text-blue-500' />
