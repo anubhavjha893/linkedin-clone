@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../../lib/axios";
-import { Link } from "react-router-dom";
-import { Bell, Home, LogOut, User, Users } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { Bell, Home, LogOut, MessageSquare, Users } from "lucide-react";
+import SearchBar from "../SearchBar";
 
 const Navbar = () => {
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 	const queryClient = useQueryClient();
+	const location = useLocation();
 
 	const { data: notifications } = useQuery({
 		queryKey: ["notifications"],
@@ -19,6 +21,13 @@ const Navbar = () => {
 		enabled: !!authUser,
 	});
 
+	const { data: unreadMessages } = useQuery({
+		queryKey: ["unreadMessages"],
+		queryFn: async () => axiosInstance.get("/messages/unread-count"),
+		enabled: !!authUser,
+		refetchInterval: 15000,
+	});
+
 	const { mutate: logout } = useMutation({
 		mutationFn: () => axiosInstance.post("/auth/logout"),
 		onSuccess: () => {
@@ -28,60 +37,86 @@ const Navbar = () => {
 
 	const unreadNotificationCount = notifications?.data.filter((notif) => !notif.read).length;
 	const unreadConnectionRequestsCount = connectionRequests?.data?.length;
+	const unreadMessageCount = unreadMessages?.data?.count;
+
+	const navLinkClass = (path, exact = true) =>
+		`flex flex-col items-center px-2 py-1 rounded-md transition-colors ${
+			(exact ? location.pathname === path : location.pathname.startsWith(path))
+				? "text-primary"
+				: "text-info hover:text-neutral"
+		}`;
 
 	return (
-		<nav className='bg-secondary shadow-md sticky top-0 z-10'>
+		<nav className='bg-secondary/95 backdrop-blur border-b border-base-300 shadow-sm sticky top-0 z-20'>
 			<div className='max-w-7xl mx-auto px-4'>
-				<div className='flex justify-between items-center py-3'>
-					<div className='flex items-center space-x-4'>
-						<Link to='/'>
-							<img className='h-8 rounded' src='/small-logo.png' alt='LinkedIn' />
+				<div className='flex justify-between items-center py-2'>
+					<div className='flex items-center gap-3 flex-1 min-w-0'>
+						<Link to='/' className='flex items-center flex-shrink-0'>
+							<img className='h-9 rounded' src='/small-logo.png' alt='LinkedIn' />
 						</Link>
+						{authUser && <SearchBar />}
 					</div>
-					<div className='flex items-center gap-2 md:gap-6'>
+					<div className='flex items-center gap-1 md:gap-3 flex-shrink-0'>
 						{authUser ? (
 							<>
-								<Link to={"/"} className='text-neutral flex flex-col items-center'>
-									<Home size={20} />
-									<span className='text-xs hidden md:block'>Home</span>
+								<Link to={"/"} className={navLinkClass("/")}>
+									<Home size={22} />
+									<span className='text-xs hidden md:block mt-0.5'>Home</span>
 								</Link>
-								<Link to='/network' className='text-neutral flex flex-col items-center relative'>
-									<Users size={20} />
-									<span className='text-xs hidden md:block'>My Network</span>
+								<Link to='/network' className={`${navLinkClass("/network")} relative`}>
+									<Users size={22} />
+									<span className='text-xs hidden md:block mt-0.5'>My Network</span>
 									{unreadConnectionRequestsCount > 0 && (
 										<span
-											className='absolute -top-1 -right-1 md:right-4 bg-blue-500 text-white text-xs 
-										rounded-full size-3 md:size-4 flex items-center justify-center'
+											className='absolute -top-1 right-0 md:right-2 bg-red-500 text-white text-[10px] font-semibold
+										rounded-full min-w-4 h-4 px-1 flex items-center justify-center leading-none'
 										>
 											{unreadConnectionRequestsCount}
 										</span>
 									)}
 								</Link>
-								<Link to='/notifications' className='text-neutral flex flex-col items-center relative'>
-									<Bell size={20} />
-									<span className='text-xs hidden md:block'>Notifications</span>
+								<Link to='/messages' className={`${navLinkClass("/messages", false)} relative`}>
+									<MessageSquare size={22} />
+									<span className='text-xs hidden md:block mt-0.5'>Messaging</span>
+									{unreadMessageCount > 0 && (
+										<span
+											className='absolute -top-1 right-0 md:right-2 bg-red-500 text-white text-[10px] font-semibold
+										rounded-full min-w-4 h-4 px-1 flex items-center justify-center leading-none'
+										>
+											{unreadMessageCount}
+										</span>
+									)}
+								</Link>
+								<Link to='/notifications' className={`${navLinkClass("/notifications")} relative`}>
+									<Bell size={22} />
+									<span className='text-xs hidden md:block mt-0.5'>Notifications</span>
 									{unreadNotificationCount > 0 && (
 										<span
-											className='absolute -top-1 -right-1 md:right-4 bg-blue-500 text-white text-xs 
-										rounded-full size-3 md:size-4 flex items-center justify-center'
+											className='absolute -top-1 right-0 md:right-2 bg-red-500 text-white text-[10px] font-semibold
+										rounded-full min-w-4 h-4 px-1 flex items-center justify-center leading-none'
 										>
 											{unreadNotificationCount}
 										</span>
 									)}
 								</Link>
+								<div className='w-px h-8 bg-base-300 mx-1 hidden md:block' />
 								<Link
 									to={`/profile/${authUser.username}`}
-									className='text-neutral flex flex-col items-center'
+									className={navLinkClass(`/profile/${authUser.username}`)}
 								>
-									<User size={20} />
-									<span className='text-xs hidden md:block'>Me</span>
+									<img
+										src={authUser.profilePicture || "/avatar.png"}
+										alt={authUser.name}
+										className='size-6 rounded-full object-cover'
+									/>
+									<span className='text-xs hidden md:block mt-0.5'>Me</span>
 								</Link>
 								<button
-									className='flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800'
+									className='flex flex-col items-center px-2 py-1 rounded-md text-info hover:text-neutral transition-colors'
 									onClick={() => logout()}
 								>
-									<LogOut size={20} />
-									<span className='hidden md:inline'>Logout</span>
+									<LogOut size={22} />
+									<span className='text-xs hidden md:block mt-0.5'>Logout</span>
 								</button>
 							</>
 						) : (
@@ -89,7 +124,7 @@ const Navbar = () => {
 								<Link to='/login' className='btn btn-ghost'>
 									Sign In
 								</Link>
-								<Link to='/signup' className='btn btn-primary'>
+								<Link to='/signup' className='btn btn-primary rounded-full'>
 									Join now
 								</Link>
 							</>

@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-hot-toast";
 
-import { Camera, Clock, MapPin, UserCheck, UserPlus, X } from "lucide-react";
+import { Camera, Clock, MapPin, MessageSquare, UserCheck, UserPlus, X } from "lucide-react";
 
 const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 	const [isEditing, setIsEditing] = useState(false);
@@ -79,11 +80,18 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 		switch (getConnectionStatus) {
 			case "connected":
 				return (
-					<div className='flex gap-2 justify-center'>
+					<div className='flex gap-2 justify-center flex-wrap'>
 						<div className={`${baseClass} bg-green-500 hover:bg-green-600`}>
 							<UserCheck size={20} className='mr-2' />
 							Connected
 						</div>
+						<Link
+							to={`/messages/${userData._id}`}
+							className={`${baseClass} bg-primary hover:bg-primary-dark`}
+						>
+							<MessageSquare size={20} className='mr-2' />
+							Message
+						</Link>
 						<button
 							className={`${baseClass} bg-red-500 hover:bg-red-600 text-sm`}
 							onClick={() => removeConnection(userData._id)}

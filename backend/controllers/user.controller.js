@@ -22,6 +22,31 @@ export const getSuggestedConnections = async (req, res) => {
 	}
 };
 
+export const searchUsers = async (req, res) => {
+	try {
+		const query = (req.query.q || "").trim();
+
+		if (!query) {
+			return res.json([]);
+		}
+
+		const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+		const regex = new RegExp(escapedQuery, "i");
+
+		const users = await User.find({
+			_id: { $ne: req.user._id },
+			$or: [{ name: regex }, { username: regex }, { headline: regex }],
+		})
+			.select("name username profilePicture headline")
+			.limit(10);
+
+		res.json(users);
+	} catch (error) {
+		console.error("Error in searchUsers controller:", error);
+		res.status(500).json({ message: "Server error" });
+	}
+};
+
 export const getPublicProfile = async (req, res) => {
 	try {
 		const user = await User.findOne({ username: req.params.username }).select("-password");
