@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Loader, Send } from "lucide-react";
+import { Check, CheckCheck, Loader, Send } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { axiosInstance } from "../../lib/axios";
 import { useSocket } from "../../context/SocketContext";
@@ -134,8 +134,18 @@ const ChatWindow = ({ otherUser, authUser }) => {
 									}`}
 								>
 									<p className='whitespace-pre-wrap break-words'>{message.content}</p>
-									<p className={`text-[10px] mt-1 ${isMine ? "text-white/70" : "text-info"}`}>
+									<p
+										className={`text-[10px] mt-1 flex items-center gap-1 ${
+											isMine ? "text-white/70 justify-end" : "text-info"
+										}`}
+									>
 										{formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
+										{isMine &&
+											(message.read ? (
+												<CheckCheck size={12} className='text-white' />
+											) : (
+												<Check size={12} />
+											))}
 									</p>
 								</div>
 							</div>
