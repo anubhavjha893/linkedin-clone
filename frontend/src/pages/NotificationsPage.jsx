@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-hot-toast";
-import { ExternalLink, Eye, MessageSquare, Repeat2, ThumbsUp, Trash2, UserPlus } from "lucide-react";
+import { Briefcase, ExternalLink, Eye, MessageSquare, Repeat2, ThumbsUp, Trash2, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { formatDistanceToNow } from "date-fns";
@@ -37,6 +37,7 @@ const NotificationsPage = () => {
 		comment: { icon: <MessageSquare size={18} className='text-green-600' />, bg: "bg-green-100" },
 		connectionAccepted: { icon: <UserPlus size={18} className='text-purple-600' />, bg: "bg-purple-100" },
 		repost: { icon: <Repeat2 size={18} className='text-teal-600' />, bg: "bg-teal-100" },
+		jobApplication: { icon: <Briefcase size={18} className='text-orange-600' />, bg: "bg-orange-100" },
 	};
 
 	const renderNotificationIcon = (type) => notificationStyles[type]?.icon ?? null;
@@ -74,6 +75,16 @@ const NotificationsPage = () => {
 							{notification.relatedUser.name}
 						</Link>{" "}
 						reposted your post
+					</span>
+				);
+			case "jobApplication":
+				return (
+					<span>
+						<Link to={`/profile/${notification.relatedUser.username}`} className='font-bold'>
+							{notification.relatedUser.name}
+						</Link>{" "}
+						applied to your job posting
+						{notification.relatedJob ? <> for &quot;{notification.relatedJob.title}&quot;</> : null}
 					</span>
 				);
 			default:

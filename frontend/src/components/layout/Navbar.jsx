@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../../lib/axios";
 import { Link, useLocation } from "react-router-dom";
-import { Bell, Home, LogOut, MessageSquare, Users } from "lucide-react";
+import { Bell, Briefcase, Home, LogOut, MessageSquare, Users } from "lucide-react";
 import SearchBar from "../SearchBar";
 
 const Navbar = () => {
@@ -75,6 +75,10 @@ const Navbar = () => {
 											{unreadConnectionRequestsCount}
 										</span>
 									)}
+								</Link>
+								<Link to='/jobs' className={navLinkClass("/jobs", false)}>
+									<Briefcase size={22} />
+									<span className='text-xs hidden md:block mt-0.5'>Jobs</span>
 								</Link>
 								<Link to='/messages' className={`${navLinkClass("/messages", false)} relative`}>
 									<MessageSquare size={22} />

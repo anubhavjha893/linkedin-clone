@@ -11,6 +11,7 @@ import postRoutes from "./routes/post.route.js";
 import notificationRoutes from "./routes/notification.route.js";
 import connectionRoutes from "./routes/connection.route.js";
 import messageRoutes from "./routes/message.route.js";
+import jobRoutes from "./routes/job.route.js";
 
 import { connectDB } from "./lib/db.js";
 import { initializeSocket } from "./lib/socket.js";
@@ -41,6 +42,7 @@ app.use("/api/v1/posts", postRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/connections", connectionRoutes);
 app.use("/api/v1/messages", messageRoutes);
+app.use("/api/v1/jobs", jobRoutes);
 
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static(path.join(__dirname, "/frontend/dist")));

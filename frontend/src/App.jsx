@@ -13,6 +13,7 @@ import PostPage from "./pages/PostPage";
 import ProfilePage from "./pages/ProfilePage";
 import MessagesPage from "./pages/MessagesPage";
 import HashtagPage from "./pages/HashtagPage";
+import JobsPage from "./pages/JobsPage";
 import { SocketProvider } from "./context/SocketContext";
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
 					<Route path='/login' element={!authUser ? <LoginPage /> : <Navigate to={"/"} />} />
 					<Route path='/notifications' element={authUser ? <NotificationsPage /> : <Navigate to={"/login"} />} />
 					<Route path='/network' element={authUser ? <NetworkPage /> : <Navigate to={"/login"} />} />
+					<Route path='/jobs' element={authUser ? <JobsPage /> : <Navigate to={"/login"} />} />
 					<Route path='/messages' element={authUser ? <MessagesPage /> : <Navigate to={"/login"} />} />
 					<Route path='/messages/:userId' element={authUser ? <MessagesPage /> : <Navigate to={"/login"} />} />
 					<Route path='/post/:postId' element={authUser ? <PostPage /> : <Navigate to={"/login"} />} />
