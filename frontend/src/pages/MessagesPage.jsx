@@ -18,7 +18,8 @@ const MessagesPage = () => {
 	const { data: conversations } = useQuery({
 		queryKey: ["conversations"],
 		queryFn: () => axiosInstance.get("/messages/conversations").then((res) => res.data),
-		refetchInterval: 10000,
+		// sockets invalidate this on new messages; this is just a safety net
+		refetchInterval: 60000,
 	});
 
 	const activeUser = connections?.find((c) => c._id === userId);

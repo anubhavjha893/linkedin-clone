@@ -25,7 +25,8 @@ const Navbar = () => {
 		queryKey: ["unreadMessages"],
 		queryFn: async () => axiosInstance.get("/messages/unread-count"),
 		enabled: !!authUser,
-		refetchInterval: 15000,
+		// sockets invalidate this on new messages; this is just a safety net
+		refetchInterval: 60000,
 	});
 
 	const { mutate: logout } = useMutation({

@@ -1,5 +1,6 @@
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
+import { emitToUser } from "../lib/socket.js";
 
 const ensureConnected = (req, res, userId) => {
 	if (userId === req.user._id.toString()) {
@@ -85,7 +86,14 @@ export const getMessages = async (req, res) => {
 			],
 		}).sort({ createdAt: 1 });
 
-		await Message.updateMany({ sender: userId, recipient: myId, read: false }, { $set: { read: true } });
+		const { modifiedCount } = await Message.updateMany(
+			{ sender: userId, recipient: myId, read: false },
+			{ $set: { read: true } }
+		);
+
+		if (modifiedCount > 0) {
+			emitToUser(userId, "messagesRead", { by: myId.toString() });
+		}
 
 		res.json(messages);
 	} catch (error) {
@@ -111,6 +119,9 @@ export const sendMessage = async (req, res) => {
 			content: content.trim(),
 		});
 		await message.save();
+
+		emitToUser(userId, "newMessage", message);
+		emitToUser(req.user._id.toString(), "newMessage", message);
 
 		res.status(201).json(message);
 	} catch (error) {

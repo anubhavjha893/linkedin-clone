@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import { formatDistanceToNowStrict } from "date-fns";
+import { useSocket } from "../../context/SocketContext";
 
 const ConversationList = ({ connections, conversations, activeUserId, authUserId }) => {
+	const { onlineUsers } = useSocket();
 	const conversationByUserId = new Map((conversations || []).map((c) => [c.user._id, c]));
 
 	const items = (connections || [])
@@ -34,11 +36,16 @@ const ConversationList = ({ connections, conversations, activeUserId, authUserId
 								isActive ? "bg-base-100" : ""
 							}`}
 						>
-							<img
-								src={connection.profilePicture || "/avatar.png"}
-								alt={connection.name}
-								className='size-11 rounded-full object-cover flex-shrink-0'
-							/>
+							<div className='relative flex-shrink-0'>
+								<img
+									src={connection.profilePicture || "/avatar.png"}
+									alt={connection.name}
+									className='size-11 rounded-full object-cover'
+								/>
+								{onlineUsers.has(connection._id) && (
+									<span className='absolute bottom-0 right-0 size-2.5 rounded-full bg-green-500 border-2 border-secondary' />
+								)}
+							</div>
 							<div className='min-w-0 flex-1'>
 								<div className='flex items-center justify-between gap-2'>
 									<p className={`text-sm truncate ${isUnread ? "font-bold" : "font-medium"}`}>

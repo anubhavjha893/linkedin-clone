@@ -1,4 +1,5 @@
 import express from "express";
+import http from "http";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -12,10 +13,13 @@ import connectionRoutes from "./routes/connection.route.js";
 import messageRoutes from "./routes/message.route.js";
 
 import { connectDB } from "./lib/db.js";
+import { initializeSocket } from "./lib/socket.js";
 
 dotenv.config();
 
 const app = express();
+const httpServer = http.createServer(app);
+initializeSocket(httpServer);
 const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
 
@@ -46,7 +50,7 @@ if (process.env.NODE_ENV === "production") {
 	});
 }
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
 	console.log(`Server running on port ${PORT}`);
 	connectDB();
 });

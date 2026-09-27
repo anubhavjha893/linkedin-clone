@@ -4,11 +4,18 @@ import { Link } from "react-router-dom";
 import { Loader, Send } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { axiosInstance } from "../../lib/axios";
+import { useSocket } from "../../context/SocketContext";
+
+const TYPING_STOP_DELAY = 2000;
 
 const ChatWindow = ({ otherUser, authUser }) => {
 	const [content, setContent] = useState("");
+	const [isOtherTyping, setIsOtherTyping] = useState(false);
 	const bottomRef = useRef(null);
+	const typingTimeoutRef = useRef(null);
 	const queryClient = useQueryClient();
+	const { socket, onlineUsers } = useSocket();
+	const isOtherOnline = onlineUsers.has(otherUser._id);
 
 	const { data: messages, isLoading } = useQuery({
 		queryKey: ["messages", otherUser._id],
@@ -16,8 +23,32 @@ const ChatWindow = ({ otherUser, authUser }) => {
 			const res = await axiosInstance.get(`/messages/${otherUser._id}`);
 			return res.data;
 		},
-		refetchInterval: 3000,
+		// sockets deliver new messages instantly; this is just a safety net
+		refetchInterval: 15000,
 	});
+
+	useEffect(() => {
+		if (!socket) return;
+
+		const handleTyping = ({ from }) => {
+			if (from === otherUser._id) setIsOtherTyping(true);
+		};
+		const handleStopTyping = ({ from }) => {
+			if (from === otherUser._id) setIsOtherTyping(false);
+		};
+
+		socket.on("typing", handleTyping);
+		socket.on("stopTyping", handleStopTyping);
+
+		return () => {
+			socket.off("typing", handleTyping);
+			socket.off("stopTyping", handleStopTyping);
+		};
+	}, [socket, otherUser._id]);
+
+	useEffect(() => {
+		setIsOtherTyping(false);
+	}, [otherUser._id]);
 
 	const { mutate: sendMessage, isPending } = useMutation({
 		mutationFn: async (text) => axiosInstance.post(`/messages/${otherUser._id}`, { content: text }),
@@ -31,28 +62,55 @@ const ChatWindow = ({ otherUser, authUser }) => {
 		bottomRef.current?.scrollIntoView({ behavior: "smooth" });
 	}, [messages]);
 
+	const stopTyping = () => {
+		clearTimeout(typingTimeoutRef.current);
+		typingTimeoutRef.current = null;
+		socket?.emit("stopTyping", { to: otherUser._id });
+	};
+
+	const handleContentChange = (e) => {
+		setContent(e.target.value);
+
+		if (!socket) return;
+
+		if (!typingTimeoutRef.current) {
+			socket.emit("typing", { to: otherUser._id });
+		} else {
+			clearTimeout(typingTimeoutRef.current);
+		}
+		typingTimeoutRef.current = setTimeout(stopTyping, TYPING_STOP_DELAY);
+	};
+
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		if (!content.trim() || isPending) return;
+		if (typingTimeoutRef.current) stopTyping();
 		sendMessage(content.trim());
 		setContent("");
 	};
 
+	useEffect(() => {
+		return () => clearTimeout(typingTimeoutRef.current);
+	}, []);
+
 	return (
 		<div className='flex flex-col h-full'>
 			<div className='flex items-center gap-3 px-4 py-3 border-b border-base-300'>
-				<Link to={`/profile/${otherUser.username}`}>
+				<Link to={`/profile/${otherUser.username}`} className='relative flex-shrink-0'>
 					<img
 						src={otherUser.profilePicture || "/avatar.png"}
 						alt={otherUser.name}
 						className='size-10 rounded-full object-cover'
 					/>
+					{isOtherOnline && (
+						<span className='absolute bottom-0 right-0 size-2.5 rounded-full bg-green-500 border-2 border-secondary' />
+					)}
 				</Link>
 				<div>
 					<Link to={`/profile/${otherUser.username}`} className='font-semibold text-sm hover:underline'>
 						{otherUser.name}
 					</Link>
-					<p className='text-xs text-info'>{otherUser.headline}</p>
+					<p className='text-xs text-info'>{isOtherTyping ? "Typing..." : isOtherOnline ? "Online" : otherUser.headline}</p>
 				</div>
 			</div>
 
@@ -84,6 +142,11 @@ const ChatWindow = ({ otherUser, authUser }) => {
 						);
 					})
 				)}
+				{isOtherTyping && (
+					<div className='flex justify-start'>
+						<div className='bg-base-100 rounded-2xl rounded-bl-sm px-3 py-2 text-sm text-info'>Typing...</div>
+					</div>
+				)}
 				<div ref={bottomRef} />
 			</div>
 
@@ -91,7 +154,7 @@ const ChatWindow = ({ otherUser, authUser }) => {
 				<input
 					type='text'
 					value={content}
-					onChange={(e) => setContent(e.target.value)}
+					onChange={handleContentChange}
 					placeholder='Write a message...'
 					className='flex-grow p-2 px-4 rounded-full bg-base-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary'
 				/>
