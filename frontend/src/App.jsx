@@ -12,6 +12,7 @@ import NetworkPage from "./pages/NetworkPage";
 import PostPage from "./pages/PostPage";
 import ProfilePage from "./pages/ProfilePage";
 import MessagesPage from "./pages/MessagesPage";
+import HashtagPage from "./pages/HashtagPage";
 import { SocketProvider } from "./context/SocketContext";
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
 					<Route path='/messages' element={authUser ? <MessagesPage /> : <Navigate to={"/login"} />} />
 					<Route path='/messages/:userId' element={authUser ? <MessagesPage /> : <Navigate to={"/login"} />} />
 					<Route path='/post/:postId' element={authUser ? <PostPage /> : <Navigate to={"/login"} />} />
+					<Route path='/hashtag/:tag' element={authUser ? <HashtagPage /> : <Navigate to={"/login"} />} />
 					<Route path='/profile/:username' element={authUser ? <ProfilePage /> : <Navigate to={"/login"} />} />
 				</Routes>
 				<Toaster />

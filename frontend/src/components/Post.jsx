@@ -7,6 +7,7 @@ import { Check, Loader, MessageCircle, Pencil, Repeat2, Send, ThumbsUp, Trash2, 
 import { formatDistanceToNow } from "date-fns";
 
 import PostAction from "./PostAction";
+import { renderRichText } from "../lib/richText";
 
 const Post = ({ post }) => {
 	const { postId } = useParams();
@@ -172,7 +173,7 @@ const Post = ({ post }) => {
 					</div>
 				</div>
 				{originalPost.content && (
-					<p className='text-sm whitespace-pre-wrap mb-2'>{originalPost.content}</p>
+					<p className='text-sm whitespace-pre-wrap mb-2'>{renderRichText(originalPost.content)}</p>
 				)}
 				{originalPost.image && (
 					<img
@@ -224,7 +225,7 @@ const Post = ({ post }) => {
 					)}
 				</div>
 
-				{!isRepost && post.content && <p className='mb-4 whitespace-pre-wrap'>{post.content}</p>}
+				{!isRepost && post.content && <p className='mb-4 whitespace-pre-wrap'>{renderRichText(post.content)}</p>}
 				{!isRepost && post.image && (
 					<img
 						src={post.image}
@@ -235,7 +236,7 @@ const Post = ({ post }) => {
 
 				{isRepost && (
 					<>
-						{post.content && <p className='mb-3 whitespace-pre-wrap'>{post.content}</p>}
+						{post.content && <p className='mb-3 whitespace-pre-wrap'>{renderRichText(post.content)}</p>}
 						<div className='mb-4'>{renderOriginalPost(original)}</div>
 					</>
 				)}
@@ -344,7 +345,7 @@ const Post = ({ post }) => {
 												</button>
 											</div>
 										) : (
-											<p className='text-sm'>{comment.content}</p>
+											<p className='text-sm whitespace-pre-wrap break-words'>{renderRichText(comment.content)}</p>
 										)}
 									</div>
 									{!isEditing && comment._id && canDelete && (

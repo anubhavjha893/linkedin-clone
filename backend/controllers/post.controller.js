@@ -21,6 +21,33 @@ export const getFeedPosts = async (req, res) => {
 	}
 };
 
+export const getPostsByHashtag = async (req, res) => {
+	try {
+		const { tag } = req.params;
+		if (!tag) return res.status(400).json({ message: "Hashtag is required" });
+
+		const escapedTag = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+		const regex = new RegExp(`#${escapedTag}\\b`, "i");
+
+		const posts = await Post.find({
+			author: { $in: [...req.user.connections, req.user._id] },
+			content: regex,
+		})
+			.populate("author", "name username profilePicture headline")
+			.populate("comments.user", "name profilePicture")
+			.populate({
+				path: "repostOf",
+				populate: { path: "author", select: "name username profilePicture headline" },
+			})
+			.sort({ createdAt: -1 });
+
+		res.status(200).json(posts);
+	} catch (error) {
+		console.error("Error in getPostsByHashtag controller:", error);
+		res.status(500).json({ message: "Server error" });
+	}
+};
+
 export const createPost = async (req, res) => {
 	try {
 		const { content, image } = req.body;
