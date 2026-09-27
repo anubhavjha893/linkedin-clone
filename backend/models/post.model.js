@@ -5,6 +5,7 @@ const postSchema = new mongoose.Schema(
 		author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 		content: { type: String },
 		image: { type: String },
+		repostOf: { type: mongoose.Schema.Types.ObjectId, ref: "Post", default: null },
 		likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 		comments: [
 			{

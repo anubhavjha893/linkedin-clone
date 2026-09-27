@@ -8,6 +8,10 @@ export const getFeedPosts = async (req, res) => {
 		const posts = await Post.find({ author: { $in: [...req.user.connections, req.user._id] } })
 			.populate("author", "name username profilePicture headline")
 			.populate("comments.user", "name profilePicture")
+			.populate({
+				path: "repostOf",
+				populate: { path: "author", select: "name username profilePicture headline" },
+			})
 			.sort({ createdAt: -1 });
 
 		res.status(200).json(posts);
@@ -80,7 +84,11 @@ export const getPostById = async (req, res) => {
 		const postId = req.params.id;
 		const post = await Post.findById(postId)
 			.populate("author", "name username profilePicture headline")
-			.populate("comments.user", "name profilePicture username headline");
+			.populate("comments.user", "name profilePicture username headline")
+			.populate({
+				path: "repostOf",
+				populate: { path: "author", select: "name username profilePicture headline" },
+			});
 
 		res.status(200).json(post);
 	} catch (error) {
@@ -130,6 +138,104 @@ export const createComment = async (req, res) => {
 		res.status(200).json(post);
 	} catch (error) {
 		console.error("Error in createComment controller:", error);
+		res.status(500).json({ message: "Server error" });
+	}
+};
+
+export const editComment = async (req, res) => {
+	try {
+		const { id: postId, commentId } = req.params;
+		const { content } = req.body;
+
+		const post = await Post.findById(postId);
+		if (!post) return res.status(404).json({ message: "Post not found" });
+
+		const comment = post.comments.id(commentId);
+		if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+		if (comment.user.toString() !== req.user._id.toString()) {
+			return res.status(403).json({ message: "You are not authorized to edit this comment" });
+		}
+
+		comment.content = content;
+		await post.save();
+
+		const populatedPost = await Post.findById(postId).populate("comments.user", "name profilePicture username headline");
+
+		res.status(200).json(populatedPost);
+	} catch (error) {
+		console.error("Error in editComment controller:", error);
+		res.status(500).json({ message: "Server error" });
+	}
+};
+
+export const deleteComment = async (req, res) => {
+	try {
+		const { id: postId, commentId } = req.params;
+
+		const post = await Post.findById(postId);
+		if (!post) return res.status(404).json({ message: "Post not found" });
+
+		const comment = post.comments.id(commentId);
+		if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+		const isCommentOwner = comment.user.toString() === req.user._id.toString();
+		const isPostOwner = post.author.toString() === req.user._id.toString();
+		if (!isCommentOwner && !isPostOwner) {
+			return res.status(403).json({ message: "You are not authorized to delete this comment" });
+		}
+
+		comment.deleteOne();
+		await post.save();
+
+		const populatedPost = await Post.findById(postId).populate("comments.user", "name profilePicture username headline");
+
+		res.status(200).json(populatedPost);
+	} catch (error) {
+		console.error("Error in deleteComment controller:", error);
+		res.status(500).json({ message: "Server error" });
+	}
+};
+
+export const repostPost = async (req, res) => {
+	try {
+		const postId = req.params.id;
+		const { content } = req.body;
+
+		const originalPost = await Post.findById(postId);
+		if (!originalPost) return res.status(404).json({ message: "Post not found" });
+
+		// always point at the true original so reposts never nest more than one level deep
+		const originalId = originalPost.repostOf ? originalPost.repostOf : originalPost._id;
+
+		const repost = new Post({
+			author: req.user._id,
+			content,
+			repostOf: originalId,
+		});
+		await repost.save();
+
+		const target = await Post.findById(originalId);
+		if (target && target.author.toString() !== req.user._id.toString()) {
+			const newNotification = new Notification({
+				recipient: target.author,
+				type: "repost",
+				relatedUser: req.user._id,
+				relatedPost: originalId,
+			});
+			await newNotification.save();
+		}
+
+		const populatedRepost = await Post.findById(repost._id)
+			.populate("author", "name username profilePicture headline")
+			.populate({
+				path: "repostOf",
+				populate: { path: "author", select: "name username profilePicture headline" },
+			});
+
+		res.status(201).json(populatedRepost);
+	} catch (error) {
+		console.error("Error in repostPost controller:", error);
 		res.status(500).json({ message: "Server error" });
 	}
 };

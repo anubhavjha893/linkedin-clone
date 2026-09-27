@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-hot-toast";
-import { ExternalLink, Eye, MessageSquare, ThumbsUp, Trash2, UserPlus } from "lucide-react";
+import { ExternalLink, Eye, MessageSquare, Repeat2, ThumbsUp, Trash2, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { formatDistanceToNow } from "date-fns";
+import { CardSkeleton } from "../components/Skeleton";
 
 const NotificationsPage = () => {
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
@@ -31,19 +32,14 @@ const NotificationsPage = () => {
 		},
 	});
 
-	const renderNotificationIcon = (type) => {
-		switch (type) {
-			case "like":
-				return <ThumbsUp className='text-blue-500' />;
-
-			case "comment":
-				return <MessageSquare className='text-green-500' />;
-			case "connectionAccepted":
-				return <UserPlus className='text-purple-500' />;
-			default:
-				return null;
-		}
+	const notificationStyles = {
+		like: { icon: <ThumbsUp size={18} className='text-blue-600' />, bg: "bg-blue-100" },
+		comment: { icon: <MessageSquare size={18} className='text-green-600' />, bg: "bg-green-100" },
+		connectionAccepted: { icon: <UserPlus size={18} className='text-purple-600' />, bg: "bg-purple-100" },
+		repost: { icon: <Repeat2 size={18} className='text-teal-600' />, bg: "bg-teal-100" },
 	};
+
+	const renderNotificationIcon = (type) => notificationStyles[type]?.icon ?? null;
 
 	const renderNotificationContent = (notification) => {
 		switch (notification.type) {
@@ -69,6 +65,15 @@ const NotificationsPage = () => {
 							{notification.relatedUser.name}
 						</Link>{" "}
 						accepted your connection request
+					</span>
+				);
+			case "repost":
+				return (
+					<span>
+						<Link to={`/profile/${notification.relatedUser.username}`} className='font-bold'>
+							{notification.relatedUser.name}
+						</Link>{" "}
+						reposted your post
 					</span>
 				);
 			default:
@@ -105,14 +110,18 @@ const NotificationsPage = () => {
 					<h1 className='text-2xl font-bold mb-6'>Notifications</h1>
 
 					{isLoading ? (
-						<p>Loading notifications...</p>
+						<div className='space-y-4'>
+							<CardSkeleton />
+							<CardSkeleton />
+							<CardSkeleton />
+						</div>
 					) : notifications && notifications.data.length > 0 ? (
 						<ul>
 							{notifications.data.map((notification) => (
 								<li
 									key={notification._id}
-									className={`bg-white border rounded-lg p-4 my-4 transition-all hover:shadow-md ${
-										!notification.read ? "border-blue-500" : "border-gray-200"
+									className={`border rounded-lg p-4 my-4 transition-all hover:shadow-md ${
+										!notification.read ? "bg-blue-50 border-blue-200" : "bg-white border-gray-200"
 									}`}
 								>
 									<div className='flex items-start justify-between'>
@@ -127,7 +136,11 @@ const NotificationsPage = () => {
 
 											<div>
 												<div className='flex items-center gap-2'>
-													<div className='p-1 bg-gray-100 rounded-full'>
+													<div
+														className={`p-1.5 rounded-full ${
+															notificationStyles[notification.type]?.bg ?? "bg-gray-100"
+														}`}
+													>
 														{renderNotificationIcon(notification.type)}
 													</div>
 													<p className='text-sm'>{renderNotificationContent(notification)}</p>
@@ -165,7 +178,9 @@ const NotificationsPage = () => {
 							))}
 						</ul>
 					) : (
-						<p>No notification at the moment.</p>
+						<div className='text-center py-12'>
+							<p className='text-gray-500'>No notifications at the moment.</p>
+						</div>
 					)}
 				</div>
 			</div>
