@@ -2,6 +2,7 @@ import cloudinary from "../lib/cloudinary.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
 import { sendCommentNotificationEmail } from "../emails/emailHandlers.js";
+import { primaryClientUrl } from "../lib/corsOrigins.js";
 
 export const getFeedPosts = async (req, res) => {
 	try {
@@ -157,7 +158,7 @@ export const createComment = async (req, res) => {
 			await newNotification.save();
 
 			try {
-				const postUrl = process.env.CLIENT_URL + "/post/" + postId;
+				const postUrl = primaryClientUrl + "/post/" + postId;
 				await sendCommentNotificationEmail(
 					post.author.email,
 					post.author.name,

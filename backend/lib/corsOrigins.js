@@ -7,3 +7,6 @@ const fromEnv = (process.env.CLIENT_URL || "")
 	.filter(Boolean);
 
 export const allowedOrigins = [...new Set(["http://localhost:5173", ...fromEnv])];
+
+// for building links (emails, etc.) where a single canonical URL is needed
+export const primaryClientUrl = fromEnv[0] || "http://localhost:5173";

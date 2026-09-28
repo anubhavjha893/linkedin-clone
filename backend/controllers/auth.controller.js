@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { sendWelcomeEmail } from "../emails/emailHandlers.js";
 import { authCookieOptions } from "../lib/cookieOptions.js";
+import { primaryClientUrl } from "../lib/corsOrigins.js";
 
 export const signup = async (req, res) => {
 	try {
@@ -53,7 +54,7 @@ export const signup = async (req, res) => {
 
 		res.status(201).json({ message: "User registered successfully" });
 
-		const profileUrl = process.env.CLIENT_URL + "/profile/" + user.username;
+		const profileUrl = primaryClientUrl + "/profile/" + user.username;
 
 		try {
 			await sendWelcomeEmail(user.email, user.name, profileUrl);
