@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
-import { Image, Loader, X } from "lucide-react";
+import { Image, Loader, Newspaper, Video, X } from "lucide-react";
 
 const PostCreation = ({ user }) => {
 	const [content, setContent] = useState("");
@@ -97,12 +97,28 @@ const PostCreation = ({ user }) => {
 			)}
 
 			<div className='flex justify-between items-center mt-4 border-t border-base-300 pt-3'>
-				<div className='flex space-x-4'>
+				<div className='flex space-x-2 sm:space-x-4'>
+					<button
+						type='button'
+						onClick={() => toast("Video posts are coming soon")}
+						className='flex items-center text-info hover:text-success transition-colors duration-200 cursor-pointer text-sm font-medium'
+					>
+						<Video size={20} className='mr-1.5' />
+						<span className='hidden sm:inline'>Video</span>
+					</button>
 					<label className='flex items-center text-info hover:text-primary transition-colors duration-200 cursor-pointer text-sm font-medium'>
-						<Image size={20} className='mr-2' />
-						<span>Photo</span>
+						<Image size={20} className='mr-1.5' />
+						<span className='hidden sm:inline'>Photo</span>
 						<input type='file' accept='image/*' className='hidden' onChange={handleImageChange} />
 					</label>
+					<button
+						type='button'
+						onClick={() => toast("Writing articles is coming soon")}
+						className='flex items-center text-info hover:text-warning transition-colors duration-200 cursor-pointer text-sm font-medium'
+					>
+						<Newspaper size={20} className='mr-1.5' />
+						<span className='hidden sm:inline'>Write article</span>
+					</button>
 				</div>
 
 				<button

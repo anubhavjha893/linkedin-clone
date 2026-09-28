@@ -6,6 +6,7 @@ import Post from "../components/Post";
 import { Users } from "lucide-react";
 import RecommendedUser from "../components/RecommendedUser";
 import { PostSkeleton } from "../components/Skeleton";
+import NewsWidget from "../components/NewsWidget";
 
 const HomePage = () => {
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
@@ -57,16 +58,17 @@ const HomePage = () => {
 				)}
 			</div>
 
-			{recommendedUsers?.length > 0 && (
-				<div className='col-span-1 lg:col-span-1 hidden lg:block'>
+			<div className='col-span-1 lg:col-span-1 hidden lg:block space-y-4'>
+				<NewsWidget />
+				{recommendedUsers?.length > 0 && (
 					<div className='bg-secondary rounded-lg shadow p-4'>
 						<h2 className='font-semibold mb-4'>People you may know</h2>
 						{recommendedUsers?.map((user) => (
 							<RecommendedUser key={user._id} user={user} />
 						))}
 					</div>
-				</div>
-			)}
+				)}
+			</div>
 		</div>
 	);
 };

@@ -2,7 +2,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { io } from "socket.io-client";
 
-const SOCKET_URL = import.meta.env.MODE === "development" ? "http://localhost:5000" : "/";
+const SOCKET_URL =
+	import.meta.env.MODE === "development" ? "http://localhost:5000" : import.meta.env.VITE_API_URL || "/";
 
 const SocketContext = createContext({ socket: null, onlineUsers: new Set() });
 

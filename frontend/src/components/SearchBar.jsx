@@ -45,7 +45,7 @@ const SearchBar = () => {
 	const showDropdown = isOpen && debouncedQuery.length > 0;
 
 	return (
-		<div ref={containerRef} className='relative w-full max-w-xs hidden sm:block'>
+		<div ref={containerRef} className='relative w-full max-w-[280px] hidden sm:block'>
 			<div className='relative'>
 				<Search size={16} className='absolute left-3 top-1/2 -translate-y-1/2 text-info' />
 				<input

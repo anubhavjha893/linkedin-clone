@@ -101,6 +101,10 @@ export const rejectConnectionRequest = async (req, res) => {
 
 		const request = await ConnectionRequest.findById(requestId);
 
+		if (!request) {
+			return res.status(404).json({ message: "Connection request not found" });
+		}
+
 		if (request.recipient.toString() !== userId.toString()) {
 			return res.status(403).json({ message: "Not authorized to reject this request" });
 		}

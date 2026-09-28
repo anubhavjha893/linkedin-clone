@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-hot-toast";
@@ -7,8 +8,16 @@ import Sidebar from "../components/Sidebar";
 import { formatDistanceToNow } from "date-fns";
 import { CardSkeleton } from "../components/Skeleton";
 
+const TABS = [
+	{ key: "all", label: "All" },
+	{ key: "jobs", label: "Jobs" },
+	{ key: "posts", label: "My posts" },
+	{ key: "mentions", label: "Mentions" },
+];
+
 const NotificationsPage = () => {
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
+	const [tab, setTab] = useState("all");
 
 	const queryClient = useQueryClient();
 
@@ -111,24 +120,50 @@ const NotificationsPage = () => {
 		);
 	};
 
+	const filteredNotifications = (notifications?.data || []).filter((notification) => {
+		if (tab === "all") return true;
+		if (tab === "jobs") return notification.type === "jobApplication";
+		if (tab === "posts") return !!notification.relatedPost;
+		if (tab === "mentions") return notification.type === "comment";
+		return true;
+	});
+
 	return (
 		<div className='grid grid-cols-1 lg:grid-cols-4 gap-6'>
-			<div className='col-span-1 lg:col-span-1'>
+			<div className='col-span-1 lg:col-span-1 space-y-4'>
 				<Sidebar user={authUser} />
+				<div className='bg-secondary rounded-lg shadow p-4'>
+					<p className='font-semibold text-sm mb-1'>Manage your notifications</p>
+					<button className='text-xs text-info hover:text-primary'>View settings</button>
+				</div>
 			</div>
 			<div className='col-span-1 lg:col-span-3'>
-				<div className='bg-white rounded-lg shadow p-6'>
-					<h1 className='text-2xl font-bold mb-6'>Notifications</h1>
-
+				<div className='bg-white rounded-lg shadow'>
+					<div className='flex gap-2 px-4 pt-4 pb-2 flex-wrap'>
+						{TABS.map(({ key, label }) => (
+							<button
+								key={key}
+								onClick={() => setTab(key)}
+								className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+									tab === key
+										? "bg-neutral text-white border-neutral"
+										: "border-base-300 text-neutral hover:bg-base-100"
+								}`}
+							>
+								{label}
+							</button>
+						))}
+					</div>
+					<div className='p-6 pt-2'>
 					{isLoading ? (
 						<div className='space-y-4'>
 							<CardSkeleton />
 							<CardSkeleton />
 							<CardSkeleton />
 						</div>
-					) : notifications && notifications.data.length > 0 ? (
+					) : filteredNotifications.length > 0 ? (
 						<ul>
-							{notifications.data.map((notification) => (
+							{filteredNotifications.map((notification) => (
 								<li
 									key={notification._id}
 									className={`border rounded-lg p-4 my-4 transition-all hover:shadow-md ${
@@ -193,6 +228,7 @@ const NotificationsPage = () => {
 							<p className='text-gray-500'>No notifications at the moment.</p>
 						</div>
 					)}
+					</div>
 				</div>
 			</div>
 		</div>

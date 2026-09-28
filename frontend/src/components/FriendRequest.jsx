@@ -29,36 +29,36 @@ const FriendRequest = ({ request }) => {
 	});
 
 	return (
-		<div className='bg-white rounded-lg shadow p-4 flex items-center justify-between transition-all hover:shadow-md'>
-			<div className='flex items-center gap-4'>
-				<Link to={`/profile/${request.sender.username}`}>
+		<div className='bg-blue-50 rounded-lg p-4 flex items-center justify-between gap-3 transition-all hover:shadow-sm'>
+			<div className='flex items-center gap-3 min-w-0'>
+				<Link to={`/profile/${request.sender.username}`} className='flex-shrink-0'>
 					<img
 						src={request.sender.profilePicture || "/avatar.png"}
 						alt={request.name}
-						className='w-16 h-16 rounded-full object-cover'
+						className='w-14 h-14 rounded-full object-cover'
 					/>
 				</Link>
 
-				<div>
-					<Link to={`/profile/${request.sender.username}`} className='font-semibold text-lg'>
+				<div className='min-w-0'>
+					<Link to={`/profile/${request.sender.username}`} className='font-semibold hover:underline'>
 						{request.sender.name}
 					</Link>
-					<p className='text-gray-600'>{request.sender.headline}</p>
+					<p className='text-gray-600 text-sm truncate'>{request.sender.headline}</p>
 				</div>
 			</div>
 
-			<div className='space-x-2'>
+			<div className='flex items-center gap-2 flex-shrink-0'>
 				<button
-					className='bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors'
+					className='border border-gray-400 text-gray-700 font-semibold px-4 py-1.5 rounded-full hover:bg-gray-100 transition-colors text-sm'
+					onClick={() => rejectConnectionRequest(request._id)}
+				>
+					Ignore
+				</button>
+				<button
+					className='bg-primary text-white font-semibold px-4 py-1.5 rounded-full hover:bg-primary-dark transition-colors text-sm'
 					onClick={() => acceptConnectionRequest(request._id)}
 				>
 					Accept
-				</button>
-				<button
-					className='bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors'
-					onClick={() => rejectConnectionRequest(request._id)}
-				>
-					Reject
 				</button>
 			</div>
 		</div>

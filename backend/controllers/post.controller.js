@@ -53,6 +53,10 @@ export const createPost = async (req, res) => {
 		const { content, image } = req.body;
 		let newPost;
 
+		if (!content?.trim() && !image) {
+			return res.status(400).json({ message: "Post must have content or an image" });
+		}
+
 		if (image) {
 			const imgResult = await cloudinary.uploader.upload(image);
 			newPost = new Post({
@@ -116,6 +120,10 @@ export const getPostById = async (req, res) => {
 				path: "repostOf",
 				populate: { path: "author", select: "name username profilePicture headline" },
 			});
+
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
 
 		res.status(200).json(post);
 	} catch (error) {
@@ -272,6 +280,10 @@ export const likePost = async (req, res) => {
 		const postId = req.params.id;
 		const post = await Post.findById(postId);
 		const userId = req.user._id;
+
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
 
 		if (post.likes.includes(userId)) {
 			// unlike the post

@@ -55,11 +55,31 @@ const Post = ({ post }) => {
 		mutationFn: async (newComment) => {
 			await axiosInstance.post(`/posts/${post._id}/comment`, { content: newComment });
 		},
+		onMutate: (newComment) => {
+			const tempId = `temp-${Date.now()}-${Math.random()}`;
+			setComments((prev) => [
+				...prev,
+				{
+					_tempId: tempId,
+					content: newComment,
+					user: {
+						_id: authUser._id,
+						name: authUser.name,
+						profilePicture: authUser.profilePicture,
+					},
+					createdAt: new Date().toISOString(),
+				},
+			]);
+			return { tempId };
+		},
 		onSuccess: () => {
 			invalidatePosts();
 		},
-		onError: (err) => {
-			toast.error(err.response.data.message || "Failed to add comment");
+		onError: (err, _newComment, context) => {
+			if (context?.tempId) {
+				setComments((prev) => prev.filter((c) => c._tempId !== context.tempId));
+			}
+			toast.error(err.response?.data?.message || "Failed to add comment");
 		},
 	});
 
@@ -124,18 +144,6 @@ const Post = ({ post }) => {
 		if (newComment.trim()) {
 			createComment(newComment);
 			setNewComment("");
-			setComments([
-				...comments,
-				{
-					content: newComment,
-					user: {
-						_id: authUser._id,
-						name: authUser.name,
-						profilePicture: authUser.profilePicture,
-					},
-					createdAt: new Date(),
-				},
-			]);
 		}
 	};
 
@@ -305,19 +313,19 @@ const Post = ({ post }) => {
 
 							return (
 								<div
-									key={comment._id || comment.createdAt}
+									key={comment._id || comment._tempId}
 									className='bg-base-100 p-2 rounded-lg flex items-start group'
 								>
 									<Link to={`/profile/${comment.user?.username}`} className='flex-shrink-0'>
 										<img
-											src={comment.user.profilePicture || "/avatar.png"}
-											alt={comment.user.name}
+											src={comment.user?.profilePicture || "/avatar.png"}
+											alt={comment.user?.name || "Deleted user"}
 											className='w-8 h-8 rounded-full mr-2 object-cover'
 										/>
 									</Link>
 									<div className='flex-grow'>
 										<div className='flex items-center gap-2 flex-wrap'>
-											<span className='font-semibold text-sm'>{comment.user.name}</span>
+											<span className='font-semibold text-sm'>{comment.user?.name || "Deleted user"}</span>
 											<span className='text-xs text-info'>
 												{formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
 											</span>

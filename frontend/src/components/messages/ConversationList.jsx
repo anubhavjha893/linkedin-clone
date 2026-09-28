@@ -2,7 +2,14 @@ import { Link } from "react-router-dom";
 import { formatDistanceToNowStrict } from "date-fns";
 import { useSocket } from "../../context/SocketContext";
 
-const ConversationList = ({ connections, conversations, activeUserId, authUserId }) => {
+const ConversationList = ({
+	connections,
+	conversations,
+	activeUserId,
+	authUserId,
+	searchQuery = "",
+	unreadOnly = false,
+}) => {
 	const { onlineUsers } = useSocket();
 	const conversationByUserId = new Map((conversations || []).map((c) => [c.user._id, c]));
 
@@ -11,6 +18,11 @@ const ConversationList = ({ connections, conversations, activeUserId, authUserId
 			connection,
 			conversation: conversationByUserId.get(connection._id),
 		}))
+		.filter(({ connection, conversation }) => {
+			if (unreadOnly && !(conversation?.unreadCount > 0)) return false;
+			if (searchQuery && !connection.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+			return true;
+		})
 		.sort((a, b) => {
 			const aTime = a.conversation ? new Date(a.conversation.lastMessage.createdAt).getTime() : 0;
 			const bTime = b.conversation ? new Date(b.conversation.lastMessage.createdAt).getTime() : 0;
@@ -18,7 +30,11 @@ const ConversationList = ({ connections, conversations, activeUserId, authUserId
 		});
 
 	if (items.length === 0) {
-		return <p className='text-sm text-info text-center p-6'>Connect with people to start messaging them.</p>;
+		return (
+			<p className='text-sm text-info text-center p-6'>
+				{searchQuery || unreadOnly ? "No conversations match this filter." : "Connect with people to start messaging them."}
+			</p>
+		);
 	}
 
 	return (

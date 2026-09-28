@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Home, UserPlus, Bell, ChevronRight } from "lucide-react";
+import { Bookmark, Calendar, Newspaper, Users2 } from "lucide-react";
 
 export default function Sidebar({ user }) {
 	return (
@@ -19,7 +19,8 @@ export default function Sidebar({ user }) {
 					/>
 					<h2 className='text-lg font-semibold mt-2 hover:underline'>{user.name}</h2>
 				</Link>
-				<p className='text-info text-sm mt-0.5'>{user.headline}</p>
+				<p className='text-info text-sm mt-0.5 line-clamp-2'>{user.headline}</p>
+				<p className='text-info text-xs mt-1'>{user.location}</p>
 				<div className='border-t border-base-300 mt-3 pt-3'>
 					<Link
 						to={`/profile/${user.username}`}
@@ -34,45 +35,27 @@ export default function Sidebar({ user }) {
 				<nav>
 					<ul>
 						<li>
-							<Link
-								to='/'
-								className='flex items-center justify-between py-2 px-4 hover:bg-base-100 transition-colors text-sm'
-							>
-								<span className='flex items-center gap-3'>
-									<Home size={18} /> Home
-								</span>
-								<ChevronRight size={14} className='text-info' />
-							</Link>
+							<span className='flex items-center gap-3 py-2 px-4 text-sm text-info cursor-not-allowed'>
+								<Bookmark size={17} /> Saved items
+							</span>
 						</li>
 						<li>
-							<Link
-								to='/network'
-								className='flex items-center justify-between py-2 px-4 hover:bg-base-100 transition-colors text-sm'
-							>
-								<span className='flex items-center gap-3'>
-									<UserPlus size={18} /> My Network
-								</span>
-								<ChevronRight size={14} className='text-info' />
-							</Link>
+							<span className='flex items-center gap-3 py-2 px-4 text-sm text-info cursor-not-allowed'>
+								<Users2 size={17} /> Groups
+							</span>
 						</li>
 						<li>
-							<Link
-								to='/notifications'
-								className='flex items-center justify-between py-2 px-4 hover:bg-base-100 transition-colors text-sm'
-							>
-								<span className='flex items-center gap-3'>
-									<Bell size={18} /> Notifications
-								</span>
-								<ChevronRight size={14} className='text-info' />
-							</Link>
+							<span className='flex items-center gap-3 py-2 px-4 text-sm text-info cursor-not-allowed'>
+								<Newspaper size={17} /> Newsletters
+							</span>
+						</li>
+						<li>
+							<span className='flex items-center gap-3 py-2 px-4 text-sm text-info cursor-not-allowed'>
+								<Calendar size={17} /> Events
+							</span>
 						</li>
 					</ul>
 				</nav>
-			</div>
-			<div className='border-t border-base-300 p-3'>
-				<Link to={`/profile/${user.username}`} className='text-sm font-semibold text-info hover:text-primary'>
-					Visit your profile
-				</Link>
 			</div>
 		</div>
 	);

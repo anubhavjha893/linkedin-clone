@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
+import { allowedOrigins } from "./corsOrigins.js";
 
 let io;
 const userSockets = new Map(); // userId -> Set<socketId>
@@ -17,7 +18,7 @@ const getCookieValue = (cookieHeader, name) => {
 export const initializeSocket = (httpServer) => {
 	io = new Server(httpServer, {
 		cors: {
-			origin: process.env.NODE_ENV === "production" ? true : "http://localhost:5173",
+			origin: allowedOrigins,
 			credentials: true,
 		},
 	});
